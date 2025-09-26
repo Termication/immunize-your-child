@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Link } from 'expo-router';
 
 
 export default function LandingScreen() {
@@ -32,9 +33,11 @@ export default function LandingScreen() {
             className="bg-primary w-full items-center py-3 rounded-lg mt-4 shadow-md"
             activeOpacity={0.8}
           >
-            <Text className="text-white text-lg font-semibold">
-              Get Started
-            </Text>
+            <Link href="/(auth)/sign-in">
+                <Text className="text-white text-lg font-semibold">
+                Get Started
+                </Text>
+            </Link>
           </TouchableOpacity>
 
           {/* Features Section */}

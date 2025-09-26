@@ -15,7 +15,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
     <View
       style={{
         flex: 1,
-        backgroundColor: '#f0f9ff', // light, calm background
+        backgroundColor: '#040720',
         justifyContent: 'center',
         alignItems: 'center',
       }}
