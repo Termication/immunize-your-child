@@ -52,6 +52,7 @@ export default function SignInScreen() {
               strategy: strategy,
             });
       
+
             if (createdSessionId) {
               await setActive({ session: createdSessionId });
               router.replace('/');
