@@ -33,7 +33,7 @@ export default function LandingScreen() {
             className="bg-primary w-full items-center py-3 rounded-lg mt-4 shadow-md"
             activeOpacity={0.8}
           >
-            <Link href="/(auth)/sign-in">
+            <Link href="/sign-in">
                 <Text className="text-white text-lg font-semibold">
                 Get Started
                 </Text>
