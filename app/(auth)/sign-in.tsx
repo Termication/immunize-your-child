@@ -19,7 +19,7 @@ export default function SignIn() {
   const [error, setError] = React.useState<string | null>(null)
 
   // iOS
-  const redirectUrl = Linking.createURL('/oauth-native-callback')
+  const redirectUrl = Linking.createURL('/dashboard/page')
 
   const { startOAuthFlow: startGoogle } = useOAuth({ strategy: 'oauth_google' })
   const { startOAuthFlow: startApple } = useOAuth({ strategy: 'oauth_apple' })
