@@ -1,160 +1,191 @@
-import { useSignIn } from '@clerk/clerk-expo';
-import { Link, useRouter } from 'expo-router';
-import { Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React from 'react'
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { Link, useRouter } from 'expo-router'
+import { useSignIn, useOAuth } from '@clerk/clerk-expo'
+import * as Linking from 'expo-linking'
+import * as WebBrowser from 'expo-web-browser'
+import { Ionicons } from '@expo/vector-icons'
 
-// Define the OAuth strategy type for clarity
-type OAuthStrategy = 'oauth_google' | 'oauth_apple';
+WebBrowser.maybeCompleteAuthSession()
 
-export default function SignInScreen() {
-    const { signIn, setActive, isLoaded } = useSignIn();
-    const router = useRouter();
+export default function SignIn() {
+  const router = useRouter()
+  const { isLoaded, signIn, setActive } = useSignIn()
 
-    const [emailAddress, setEmailAddress] = React.useState('');
-    const [password, setPassword] = React.useState('');
-    const [loading, setLoading] = React.useState<OAuthStrategy | 'password' | false>(false);
+  const [email, setEmail] = React.useState('')
+  const [code, setCode] = React.useState('')
+  const [pendingVerification, setPendingVerification] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
-    // Handle the submission of the sign-in form
-    const onSignInPress = async () => {
-        if (!isLoaded) return;
-        setLoading('password');
+  // iOS
+  const redirectUrl = Linking.createURL('/oauth-native-callback')
 
-        try {
-            const signInAttempt = await signIn.create({
-                identifier: emailAddress,
-                password,
-            });
+  const { startOAuthFlow: startGoogle } = useOAuth({ strategy: 'oauth_google' })
+  const { startOAuthFlow: startApple } = useOAuth({ strategy: 'oauth_apple' })
 
-            if (signInAttempt.status === 'complete') {
-                await setActive({ session: signInAttempt.createdSessionId });
-                router.replace('/');
-            } else {
-                console.error(JSON.stringify(signInAttempt, null, 2));
-                alert('Sign in failed. Please check your credentials.');
-            }
-        } catch (err: any) {
-            console.error(JSON.stringify(err, null, 2));
-            alert(err.errors?.[0]?.message || 'An error occurred during sign in.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleEmailStart = async () => {
+    if (!isLoaded || !email.trim()) return
+    setLoading(true)
+    setError(null)
+    try {
+      await signIn.create({
+        identifier: email.trim(),
+        strategy: 'email_code',
+      })
+      setPendingVerification(true)
+    } catch (err: any) {
+      setError(err?.errors?.[0]?.message ?? 'Failed to send code. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    // Handle the social sign-in press
-    const onSocialPress = async (strategy: OAuthStrategy) => {
-        if (!isLoaded) return;
-        setLoading(strategy);
+  const handleVerifyCode = async () => {
+    if (!isLoaded || !code.trim()) return
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await signIn.attemptFirstFactor({
+        strategy: 'email_code',
+        code: code.trim(),
+      })
+      if (res.status === 'complete') {
+        await setActive({ session: res.createdSessionId })
+        router.replace('/')
+      } else {
+        setError('Additional steps required. Please try again.')
+      }
+    } catch (err: any) {
+      setError(err?.errors?.[0]?.message ?? 'Invalid or expired code.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-        try {
-            // This initiates the OAuth flow provided by Clerk.
-            const { createdSessionId, signIn, signUp } = await signIn.create({
-              strategy: strategy,
-            });
-      
-            if (createdSessionId) {
-              await setActive({ session: createdSessionId });
-              router.replace('/');
-            }
-        } catch (err) {
-            console.error('OAuth error', JSON.stringify(err, null, 2));
-            alert('An error occurred during social sign in.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleOAuth = async (provider: 'google' | 'apple') => {
+    setError(null)
+    try {
+      const start = provider === 'google' ? startGoogle : startApple
+      const { createdSessionId, setActive: clerkSetActive } = await start({ redirectUrl })
+      if (createdSessionId) {
+        await clerkSetActive?.({ session: createdSessionId })
+        router.replace('/')
+      }
+    } catch (err: any) {
+      setError(err?.errors?.[0]?.message ?? `Failed to sign in with ${provider}.`)
+    }
+  }
 
-    return (
-        <SafeAreaView className="flex-1 bg-secondary">
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1"
+  return (
+    <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} className="flex-1 bg-white dark:bg-neutral-950">
+      <View className="flex-1 px-6 pt-16">
+        <Text className="text-3xl font-bold text-neutral-900 dark:text-white">Welcome back</Text>
+        <Text className="mt-1 text-base text-neutral-500 dark:text-neutral-400">Sign in to continue</Text>
+
+        {!!error && (
+          <View className="mt-4 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-3 py-2">
+            <Text className="text-red-600 dark:text-red-400">{error}</Text>
+          </View>
+        )}
+
+        {!pendingVerification ? (
+          <>
+            <View className="mt-8">
+              <Text className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">Email</Text>
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholder="you@example.com"
+                placeholderTextColor="#9CA3AF"
+                className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
+              />
+            </View>
+
+            <TouchableOpacity
+              onPress={handleEmailStart}
+              disabled={loading || !email.trim()}
+              className="mt-4 h-12 rounded-xl bg-neutral-900 dark:bg-white items-center justify-center disabled:opacity-50"
             >
-                <View className="flex-1 justify-center items-center p-6">
-                    <Image
-                        // IMPORTANT: Replace this with your actual local logo file
-                        source={{ uri: 'https://placehold.co/150x150/800000/FFFFFF?text=Logo' }}
-                        className="w-36 h-36 mb-8"
-                        resizeMode="contain"
-                    />
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white dark:text-neutral-900 font-semibold">Continue with Email</Text>
+              )}
+            </TouchableOpacity>
 
-                    <Text className="text-3xl font-bold text-gray-800 mb-6">Welcome Back</Text>
+            <View className="my-6 flex-row items-center">
+              <View className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
+              <Text className="mx-3 text-neutral-500 dark:text-neutral-400">or</Text>
+              <View className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
+            </View>
 
-                    <View className="w-full">
-                        <TextInput
-                            autoCapitalize="none"
-                            value={emailAddress}
-                            placeholder="Email Address"
-                            onChangeText={(email) => setEmailAddress(email)}
-                            className="bg-white text-base p-4 w-full rounded-lg border border-gray-200 mb-4"
-                            keyboardType="email-address"
-                        />
-                        <TextInput
-                            value={password}
-                            placeholder="Password"
-                            secureTextEntry={true}
-                            onChangeText={(password) => setPassword(password)}
-                            className="bg-white text-base p-4 w-full rounded-lg border border-gray-200"
-                        />
-                    </View>
+            <View className="gap-3">
+              <TouchableOpacity
+                onPress={() => handleOAuth('google')}
+                className="h-12 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex-row items-center justify-center"
+              >
+                <Ionicons name="logo-google" size={18} color="#EA4335" style={{ marginRight: 8 }} />
+                <Text className="text-neutral-900 dark:text-neutral-100 font-semibold">Continue with Google</Text>
+              </TouchableOpacity>
 
-                    <TouchableOpacity
-                        onPress={onSignInPress}
-                        disabled={!!loading}
-                        className={`w-full items-center py-3 rounded-lg mt-6 shadow-md ${loading ? 'bg-gray-400' : 'bg-primary'}`}
-                    >
-                        {loading === 'password' ? (
-                            <ActivityIndicator color="#ffffff" />
-                        ) : (
-                            <Text className="text-white text-lg font-semibold">Sign In</Text>
-                        )}
-                    </TouchableOpacity>
-                    
-                    {/* Divider */}
-                    <View className="flex-row items-center my-6 w-full">
-                        <View className="flex-1 h-px bg-gray-300" />
-                        <Text className="mx-4 text-gray-500">or continue with</Text>
-                        <View className="flex-1 h-px bg-gray-300" />
-                    </View>
+              <TouchableOpacity
+                onPress={() => handleOAuth('apple')}
+                className="h-12 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex-row items-center justify-center"
+              >
+                <Ionicons name="logo-apple" size={20} color="#000" style={{ marginRight: 8 }} />
+                <Text className="text-neutral-900 dark:text-neutral-100 font-semibold">Continue with Apple</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <>
+            <View className="mt-8">
+              <Text className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                Enter the 6-digit code we sent to
+              </Text>
+              <Text className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{email}</Text>
 
-                    {/* Social Logins */}
-                    <TouchableOpacity
-                        onPress={() => onSocialPress('oauth_google')}
-                        disabled={!!loading}
-                        className="w-full bg-white flex-row justify-center items-center py-3 rounded-lg shadow-md border border-gray-200"
-                    >
-                         {loading === 'oauth_google' ? (
-                            <ActivityIndicator className="mr-2" />
-                        ) : (
-                            <Image source={{uri: 'https://img.icons8.com/color/48/google-logo.png'}} className="w-6 h-6 mr-2" />
-                        )}
-                        <Text className="text-gray-800 text-lg font-semibold">Google</Text>
-                    </TouchableOpacity>
+              <TextInput
+                value={code}
+                onChangeText={setCode}
+                keyboardType="number-pad"
+                maxLength={6}
+                placeholder="123456"
+                placeholderTextColor="#9CA3AF"
+                className="mt-4 h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 tracking-widest text-center"
+              />
+            </View>
 
-                    <TouchableOpacity
-                        onPress={() => onSocialPress('oauth_apple')}
-                        disabled={!!loading}
-                        className="w-full bg-black flex-row justify-center items-center py-3 rounded-lg shadow-md mt-4"
-                    >
-                        {loading === 'oauth_apple' ? (
-                            <ActivityIndicator color="#ffffff" className="mr-2" />
-                        ) : (
-                             <Image source={{uri: 'https://img.icons8.com/ios-filled/50/ffffff/mac-os.png'}} className="w-6 h-6 mr-2" />
-                        )}
-                        <Text className="text-white text-lg font-semibold">Apple</Text>
-                    </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleVerifyCode}
+              disabled={loading || code.trim().length < 6}
+              className="mt-4 h-12 rounded-xl bg-neutral-900 dark:bg-white items-center justify-center disabled:opacity-50"
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white dark:text-neutral-900 font-semibold">Verify and Continue</Text>
+              )}
+            </TouchableOpacity>
 
-                    <View className="flex-row gap-1 mt-8">
-                        <Text className="text-gray-600">Don't have an account?</Text>
-                        <Link href="/sign-up" asChild>
-                            <TouchableOpacity>
-                                <Text className="text-primary font-semibold">Sign up</Text>
-                            </TouchableOpacity>
-                        </Link>
-                    </View>
-                </View>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
-    );
+            <TouchableOpacity onPress={() => { setPendingVerification(false); setCode('') }} className="mt-4 items-center">
+              <Text className="text-neutral-500 dark:text-neutral-400">Use a different email</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        <View className="mt-8 flex-row gap-2">
+          <Text className="text-neutral-500 dark:text-neutral-400">Don’t have an account?</Text>
+          <Link href="/sign-up" asChild>
+            <TouchableOpacity>
+              <Text className="text-neutral-900 dark:text-white font-semibold">Sign up</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  )
 }
-
