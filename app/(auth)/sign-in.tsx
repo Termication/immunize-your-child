@@ -19,7 +19,7 @@ export default function SignIn() {
   const [error, setError] = React.useState<string | null>(null)
 
   // iOS
-  const redirectUrl = Linking.createURL('/oauth-native-callback')
+  const redirectUrl = Linking.createURL('/dashboard/page')
 
   const { startOAuthFlow: startGoogle } = useOAuth({ strategy: 'oauth_google' })
   const { startOAuthFlow: startApple } = useOAuth({ strategy: 'oauth_apple' })
@@ -78,7 +78,7 @@ export default function SignIn() {
   }
 
   return (
-    <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} className="flex-1 bg-white dark:bg-neutral-950">
+    <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} className="flex-1 bg-secondary dark:bg-neutral-950">
       <View className="flex-1 px-6 pt-16">
         <Text className="text-3xl font-bold text-neutral-900 dark:text-white">Welcome back</Text>
         <Text className="mt-1 text-base text-neutral-500 dark:text-neutral-400">Sign in to continue</Text>
