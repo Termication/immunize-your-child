@@ -81,7 +81,7 @@ export default function SignIn() {
     <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} className="flex-1 bg-secondary dark:bg-neutral-950">
       <View className="flex-1 px-6 pt-16">
         <Text className="text-3xl font-bold text-neutral-900 dark:text-white">Welcome back</Text>
-        <Text className="mt-1 text-base text-neutral-500 dark:text-neutral-400">Sign in to continue</Text>
+        <Text className="mt-1 text-base text-gray-500 dark:text-neutral-400">Sign in to continue</Text>
 
         {!!error && (
           <View className="mt-4 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 px-3 py-2">
@@ -92,7 +92,7 @@ export default function SignIn() {
         {!pendingVerification ? (
           <>
             <View className="mt-8">
-              <Text className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">Email</Text>
+              <Text className="mb-2 text-sm font-medium text-white dark:text-neutral-300">Email</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -100,14 +100,14 @@ export default function SignIn() {
                 autoCapitalize="none"
                 placeholder="you@example.com"
                 placeholderTextColor="#9CA3AF"
-                className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
+                className="h-12 px-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-gray-300"
               />
             </View>
 
             <TouchableOpacity
               onPress={handleEmailStart}
               disabled={loading || !email.trim()}
-              className="mt-4 h-12 rounded-xl bg-neutral-900 dark:bg-white items-center justify-center disabled:opacity-50"
+              className="mt-4 h-12 rounded-xl bg-neutral-900 dark:bg-primary items-center justify-center disabled:opacity-50"
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
@@ -177,14 +177,6 @@ export default function SignIn() {
           </>
         )}
 
-        <View className="mt-8 flex-row gap-2">
-          <Text className="text-neutral-500 dark:text-neutral-400">Don’t have an account?</Text>
-          <Link href="/sign-up" asChild>
-            <TouchableOpacity>
-              <Text className="text-neutral-900 dark:text-white font-semibold">Sign up</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
       </View>
     </KeyboardAvoidingView>
   )
