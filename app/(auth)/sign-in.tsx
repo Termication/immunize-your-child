@@ -24,6 +24,7 @@ export default function SignIn() {
   const { startOAuthFlow: startGoogle } = useOAuth({ strategy: 'oauth_google' })
   const { startOAuthFlow: startApple } = useOAuth({ strategy: 'oauth_apple' })
 
+  // Email
   const handleEmailStart = async () => {
     if (!isLoaded || !email.trim()) return
     setLoading(true)
@@ -41,6 +42,7 @@ export default function SignIn() {
     }
   }
 
+  // Verify code
   const handleVerifyCode = async () => {
     if (!isLoaded || !code.trim()) return
     setLoading(true)
@@ -63,6 +65,7 @@ export default function SignIn() {
     }
   }
 
+  // OAuth 
   const handleOAuth = async (provider: 'google' | 'apple') => {
     setError(null)
     try {
@@ -77,6 +80,7 @@ export default function SignIn() {
     }
   }
 
+  // UI
   return (
     <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} className="flex-1 bg-secondary dark:bg-neutral-950">
       <View className="flex-1 px-6 pt-16">
