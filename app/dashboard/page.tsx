@@ -10,10 +10,10 @@ export default function Dashboard() {
       <Text className="mt-2 text-neutral-500 dark:text-neutral-400">You’re signed in 🎉</Text>
 
       <TouchableOpacity
-        className="mt-8 h-12 rounded-xl bg-neutral-900 dark:bg-white items-center justify-center"
+        className="mt-8 h-12 rounded-xl bg-grey-900 dark:bg-white items-center justify-center"
         onPress={() => signOut()}
       >
-        <Text className="text-white dark:text-neutral-500 font-semibold">Sign out</Text>
+        <Text className="text-white dark:text-black font-semibold">Sign out</Text>
       </TouchableOpacity>
     </View>
   );
