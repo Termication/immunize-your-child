@@ -10,6 +10,7 @@ export default function Dashboard() {
   // Replace with real data later (from your API/DB)
   const [children, setChildren] = React.useState<Array<{ id: string; name: string }>>([])
 
+  // Get children from API
   return (
     <View className="flex-1 bg-secondary dark:bg-neutral-950 px-6 pt-16">
       {/* Header */}
