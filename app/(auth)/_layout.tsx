@@ -1,7 +1,10 @@
-import { Stack, Redirect } from "expo-router";
+import { Stack, Redirect, useRootNavigationState } from "expo-router";
 import { SignedIn, SignedOut } from "@clerk/clerk-expo";
 
 export default function AuthLayout() {
+  const nav = useRootNavigationState()
+  if (!nav) return null
+  
   return (
     <>
       <SignedIn>

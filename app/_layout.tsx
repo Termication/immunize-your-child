@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, useRootNavigationState } from "expo-router";
 import "../app/globals.css";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
@@ -9,6 +9,9 @@ const tokenCache = {
 };
 
 export default function RootLayout() {
+  const nav = useRootNavigationState()
+  if (!nav) return null
+  
   return (
     <ClerkProvider
       tokenCache={tokenCache}
