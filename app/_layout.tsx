@@ -8,6 +8,7 @@ const tokenCache = {
   saveToken: (key: string, value: string) => SecureStore.setItemAsync(key, value),
 };
 
+// This is the root layout for the app
 export default function RootLayout() {
   const nav = useRootNavigationState()
   if (!nav) return null
