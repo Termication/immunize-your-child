@@ -1,23 +1,15 @@
-import React, { useEffect } from 'react'
-import { View, Image, ActivityIndicator, Text } from 'react-native'
-import { useRouter, useRootNavigationState } from 'expo-router'
-import { useAuth } from '@clerk/clerk-expo'
+import React, { useEffect } from 'react';
+import { View, Image, ActivityIndicator, Text } from 'react-native';
 
-export default function SplashScreen() {
-  const router = useRouter()
-  const nav = useRootNavigationState()
-  const { isSignedIn, isLoaded } = useAuth()
-
+export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
   useEffect(() => {
-    // Only navigate after the root navigator and Clerk are ready
-    if (!nav?.key || !isLoaded) return
-
+    // Simulate loading — 2.5 seconds
     const timer = setTimeout(() => {
-      router.replace(isSignedIn ? '/' : '/sign-in')
-    }, 1500) // adjust duration as you like
+      onFinish();
+    }, 2500);
 
-    return () => clearTimeout(timer)
-  }, [nav?.key, isLoaded, isSignedIn, router])
+    return () => clearTimeout(timer);
+  }, [onFinish]);
 
   return (
     <View
@@ -28,14 +20,24 @@ export default function SplashScreen() {
         alignItems: 'center',
       }}
     >
+      {/* Logo */}
       <Image
         source={require('../assets/images/logo_icon.png')}
-        style={{ width: 180, height: 180, resizeMode: 'contain', marginBottom: 20 }}
-      />
+        style={{
+            width: 180,
+            height: 180,
+            resizeMode: 'contain',
+            marginBottom: 20,
+        }}
+        />
+
+      {/* Small “loading” indicator */}
       <ActivityIndicator size="large" color="#1e90ff" />
-      <Text style={{ marginTop: 16, fontSize: 14, color: '#9CA3AF' }}>
+
+      {/* App tagline (light subtle text) */}
+      <Text style={{ marginTop: 16, fontSize: 14, color: '#666' }}>
         Preparing your child’s protection...
       </Text>
     </View>
-  )
+  );
 }
