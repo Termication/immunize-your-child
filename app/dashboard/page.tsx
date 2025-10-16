@@ -37,7 +37,7 @@ export default function Dashboard() {
                 Add your first child to start tracking vaccinations and reminders.
               </Text>
 
-              <Link href="/add-child" asChild>
+              <Link href="/add-child/page" asChild>
                 <TouchableOpacity className="mt-5 h-12 px-5 rounded-xl bg-primary items-center justify-center">
                   <Text className="text-white font-semibold">Add Child</Text>
                 </TouchableOpacity>
