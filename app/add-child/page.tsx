@@ -2,9 +2,11 @@ import React from 'react'
 import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
+import { useAuth } from '@clerk/clerk-expo'
 
 export default function AddChild() {
   const router = useRouter()
+  const { getToken } = useAuth()
 
   // Parent info
   const [motherName, setMotherName] = React.useState('')
@@ -47,6 +49,12 @@ export default function AddChild() {
     setSubmitting(true)
 
     try {
+      const baseUrl = process.env.EXPO_PUBLIC_API_URL
+      if (!baseUrl) throw new Error('Missing EXPO_PUBLIC_API_URL (your API base URL).')
+
+      // Clerk session token
+      const token = await getToken()
+
       const payload = {
         mother_name: motherName.trim(),
         father_name: fatherName.trim(),
@@ -60,15 +68,21 @@ export default function AddChild() {
         place_of_birth: placeOfBirth.trim(),
       }
 
-      const res = await fetch(`${process.env.DATABASE_URL}/api/children`, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify(payload),
-       })
-      if (!res.ok) throw new Error(await res.text())
+      const res = await fetch(`${baseUrl}/api/children`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      })
 
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || `Request failed with ${res.status}`)
+      }
 
-      Alert.alert('Saved (stub)', 'We will wire this to Neon next.')
+      Alert.alert('Success', 'Child saved.')
       router.back()
     } catch (err: any) {
       Alert.alert('Error', err?.message ?? 'Failed to save child.')
@@ -86,70 +100,19 @@ export default function AddChild() {
           {/* Parents */}
           <Text className="mt-6 mb-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">Parents</Text>
           <View className="gap-3">
-            <TextInput
-              value={motherName}
-              onChangeText={setMotherName}
-              placeholder="Mother’s full name"
-              placeholderTextColor="#9CA3AF"
-              className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-            />
-            <TextInput
-              value={fatherName}
-              onChangeText={setFatherName}
-              placeholder="Father’s full name"
-              placeholderTextColor="#9CA3AF"
-              className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-            />
+            <TextInput value={motherName} onChangeText={setMotherName} placeholder="Mother’s full name" placeholderTextColor="#9CA3AF" className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100" />
+            <TextInput value={fatherName} onChangeText={setFatherName} placeholder="Father’s full name" placeholderTextColor="#9CA3AF" className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100" />
           </View>
 
           {/* Child */}
           <Text className="mt-6 mb-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">Child</Text>
           <View className="gap-3">
-            <TextInput
-              value={childFirstName}
-              onChangeText={setChildFirstName}
-              placeholder="Child’s first name"
-              placeholderTextColor="#9CA3AF"
-              className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-            />
-            <TextInput
-              value={childSurname}
-              onChangeText={setChildSurname}
-              placeholder="Child’s surname"
-              placeholderTextColor="#9CA3AF"
-              className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-            />
-            <TextInput
-              value={dob}
-              onChangeText={setDob}
-              placeholder="Date of birth (YYYY-MM-DD)"
-              placeholderTextColor="#9CA3AF"
-              autoCapitalize="none"
-              className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-            />
-            <TextInput
-              value={idNumber}
-              onChangeText={setIdNumber}
-              placeholder="ID number (optional)"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="number-pad"
-              className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-            />
-            <TextInput
-              value={weightKg}
-              onChangeText={setWeightKg}
-              placeholder="Weight (kg), e.g. 3.2"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="decimal-pad"
-              className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-            />
-            <TextInput
-              value={location}
-              onChangeText={setLocation}
-              placeholder="Location (City/Suburb)"
-              placeholderTextColor="#9CA3AF"
-              className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-            />
+            <TextInput value={childFirstName} onChangeText={setChildFirstName} placeholder="Child’s first name" placeholderTextColor="#9CA3AF" className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100" />
+            <TextInput value={childSurname} onChangeText={setChildSurname} placeholder="Child’s surname" placeholderTextColor="#9CA3AF" className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100" />
+            <TextInput value={dob} onChangeText={setDob} placeholder="Date of birth (YYYY-MM-DD)" placeholderTextColor="#9CA3AF" autoCapitalize="none" className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100" />
+            <TextInput value={idNumber} onChangeText={setIdNumber} placeholder="ID number (optional)" placeholderTextColor="#9CA3AF" keyboardType="number-pad" className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100" />
+            <TextInput value={weightKg} onChangeText={setWeightKg} placeholder="Weight (kg), e.g. 3.2" placeholderTextColor="#9CA3AF" keyboardType="decimal-pad" className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100" />
+            <TextInput value={location} onChangeText={setLocation} placeholder="Location (City/Suburb)" placeholderTextColor="#9CA3AF" className="h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100" />
 
             {/* Birth order quick-select */}
             <View className="mt-1">
@@ -158,15 +121,7 @@ export default function AddChild() {
                 {(['1', '2', '3'] as const).map((n) => {
                   const selected = birthOrder === n
                   return (
-                    <TouchableOpacity
-                      key={n}
-                      onPress={() => setBirthOrder(n)}
-                      className={`px-4 h-10 rounded-lg items-center justify-center border ${
-                        selected
-                          ? 'bg-primary border-primary'
-                          : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'
-                      }`}
-                    >
+                    <TouchableOpacity key={n} onPress={() => setBirthOrder(n)} className={`px-4 h-10 rounded-lg items-center justify-center border ${selected ? 'bg-primary border-primary' : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'}`}>
                       <Text className={selected ? 'text-white font-semibold' : 'text-neutral-800 dark:text-neutral-200'}>
                         {n === '1' ? 'First' : n === '2' ? 'Second' : 'Third'}
                       </Text>
@@ -176,28 +131,15 @@ export default function AddChild() {
               </View>
             </View>
 
-            <TextInput
-              value={placeOfBirth}
-              onChangeText={setPlaceOfBirth}
-              placeholder="Place of birth (Hospital/Clinic/Home)"
-              placeholderTextColor="#9CA3AF"
-              className="mt-3 h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-            />
+            <TextInput value={placeOfBirth} onChangeText={setPlaceOfBirth} placeholder="Place of birth (Hospital/Clinic/Home)" placeholderTextColor="#9CA3AF" className="mt-3 h-12 px-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100" />
           </View>
 
           {/* Actions */}
-          <TouchableOpacity
-            onPress={onSave}
-            disabled={submitting}
-            className="mt-6 h-12 rounded-xl bg-primary items-center justify-center disabled:opacity-60"
-          >
+          <TouchableOpacity onPress={onSave} disabled={submitting} className="mt-6 h-12 rounded-xl bg-primary items-center justify-center disabled:opacity-60">
             <Text className="text-white font-semibold">{submitting ? 'Saving…' : 'Save'}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="mt-3 h-12 rounded-xl border border-neutral-300 dark:border-neutral-800 items-center justify-center"
-          >
+          <TouchableOpacity onPress={() => router.back()} className="mt-3 h-12 rounded-xl border border-neutral-300 dark:border-neutral-800 items-center justify-center">
             <Text className="text-neutral-700 dark:text-neutral-200 font-semibold">Cancel</Text>
           </TouchableOpacity>
         </ScrollView>
