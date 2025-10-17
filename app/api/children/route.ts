@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     const sql = neon(process.env.DATABASE_URL!)
     
     // Insert the child record
-    const rows = await sql<{ id: string }[]>`
+    const rows = await sql`
       INSERT INTO children (
         user_id, mother_name, father_name,
         child_first_name, child_surname, dob,
@@ -58,12 +58,14 @@ export async function POST(req: Request) {
       RETURNING id
     `
 
-    if (!rows || rows.length === 0) {
+    const created = rows as Array<{ id: string }>
+
+    if (!created || created.length === 0) {
       throw new Error('Failed to create child record')
     }
 
     return Response.json({ 
-      id: rows[0].id,
+      id: created[0].id,
       message: 'Child added successfully'
     }, { status: 201 })
     
