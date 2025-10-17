@@ -1,10 +1,13 @@
-import { auth } from '@clerk/nextjs/server'
 import { neon } from '@neondatabase/serverless'
+import { auth } from '@clerk/nextjs/server'
 
 export async function POST(req: Request) {
   try {
-    const { userId } = auth()
-    if (!userId) return new Response('Unauthorized', { status: 401 })
+    // Get the current user from Clerk
+    const { userId } = await auth()
+    if (!userId) {
+      return new Response('Unauthorized', { status: 401 })
+    }
 
     const body = await req.json()
     const {
@@ -20,29 +23,58 @@ export async function POST(req: Request) {
       place_of_birth,
     } = body || {}
 
+    // Validate required fields
     if (!mother_name || !father_name || !child_first_name || !child_surname || !dob) {
-      return new Response('Missing required fields', { status: 400 })
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }), 
+        { status: 400 }
+      )
+    }
+
+    // Validate date format
+    const dobDate = new Date(dob)
+    if (isNaN(dobDate.getTime())) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid date format' }), 
+        { status: 400 }
+      )
     }
 
     const sql = neon(process.env.DATABASE_URL!)
+    
+    // Insert the child record
     const rows = await sql<{ id: string }[]>`
-      insert into children (
+      INSERT INTO children (
         user_id, mother_name, father_name,
         child_first_name, child_surname, dob,
         id_number, weight_kg, location,
-        birth_order, place_of_birth
-      ) values (
+        birth_order, place_of_birth, created_at
+      ) VALUES (
         ${userId}, ${mother_name}, ${father_name},
         ${child_first_name}, ${child_surname}, ${dob},
-        ${id_number}, ${weight_kg}, ${location},
-        ${birth_order}, ${place_of_birth}
+        ${id_number || null}, ${weight_kg || null}, ${location || null},
+        ${birth_order}, ${place_of_birth || null}, NOW()
       )
-      returning id
+      RETURNING id
     `
 
-    return Response.json({ id: rows[0].id }, { status: 201 })
+    if (!rows || rows.length === 0) {
+      throw new Error('Failed to create child record')
+    }
+
+    return Response.json({ 
+      id: rows[0].id,
+      message: 'Child added successfully'
+    }, { status: 201 })
+    
   } catch (e: any) {
-    console.error(e)
-    return new Response('Server error', { status: 500 })
+    console.error('Database error:', e)
+    return new Response(
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? e.message : undefined
+      }), 
+      { status: 500 }
+    )
   }
 }
