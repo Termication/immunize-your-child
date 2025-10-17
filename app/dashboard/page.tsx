@@ -17,7 +17,7 @@ export default function Dashboard() {
         <View className="flex-row items-center justify-between">
           <Text className="text-3xl font-bold text-neutral-900 dark:text-white">Dashboard</Text>
 
-          <Link href="/add-child" asChild>
+          <Link href="/add-child/page" asChild>
             <TouchableOpacity className="flex-row items-center px-3 py-2 rounded-xl bg-primary">
               <Ionicons name="add-circle-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
               <Text className="text-white font-semibold">Add Child</Text>
