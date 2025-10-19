@@ -5,6 +5,7 @@ import { useAuth } from '@clerk/clerk-expo'
 import { Link } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 
+
 export default function Dashboard() {
   const { signOut } = useAuth()
 
