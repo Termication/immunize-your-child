@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons'
 
 WebBrowser.maybeCompleteAuthSession()
 
+// Sign in page
 export default function SignIn() {
   const router = useRouter()
   const { isLoaded, signIn, setActive } = useSignIn()

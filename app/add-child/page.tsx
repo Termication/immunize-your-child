@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { useAuth } from '@clerk/clerk-expo'
 
+// Add Child Page
 export default function AddChild() {
   const router = useRouter()
   const { getToken, userId } = useAuth()
@@ -24,6 +25,7 @@ export default function AddChild() {
 
   const [submitting, setSubmitting] = React.useState(false)
 
+  // Validate the form
   const validate = () => {
     if (!motherName.trim() || !fatherName.trim()) {
       Alert.alert('Missing info', 'Please enter both parents\' names.')
@@ -52,6 +54,7 @@ export default function AddChild() {
     return true
   }
 
+  // Save the child
   const onSave = async () => {
     if (!validate()) return
     setSubmitting(true)
@@ -106,6 +109,7 @@ export default function AddChild() {
     }
   }
 
+  // Render the page
   return (
     <SafeAreaView className="flex-1 bg-secondary dark:bg-neutral-950">
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
