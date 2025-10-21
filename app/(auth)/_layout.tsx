@@ -5,6 +5,7 @@ export default function AuthLayout() {
   const nav = useRootNavigationState()
   if (!nav) return null
   
+  // Render the layout
   return (
     <>
       <SignedIn>
