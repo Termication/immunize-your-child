@@ -1,26 +1,13 @@
+import express from 'express'
 import { neon } from '@neondatabase/serverless'
-import { verifyToken } from '@clerk/backend'
+import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node'
 
-export async function POST(req: Request) {
+const router = express.Router()
+const sql = neon(process.env.DATABASE_URL)
+
+router.post('/', ClerkExpressRequireAuth(), async (req, res) => {
   try {
-    // Get the token from the Authorization header
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response('Unauthorized', { status: 401 })
-    }
-
-    const token = authHeader.split(' ')[1]
-
-    // Verify the token using Clerk backend
-    const { userId } = await verifyToken(token, {
-      secretKey: process.env.CLERK_SECRET_KEY!,
-    })
-
-    if (!userId) {
-      return new Response('Unauthorized', { status: 401 })
-    }
-
-    const body = await req.json()
+    const userId = req.auth.userId
     const {
       mother_name,
       father_name,
@@ -32,28 +19,19 @@ export async function POST(req: Request) {
       location,
       birth_order,
       place_of_birth,
-    } = body || {}
+    } = req.body || {}
 
-    // Validate required fields
+    // Validation
     if (!mother_name || !father_name || !child_first_name || !child_surname || !dob) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400 }
-      )
+      return res.status(400).json({ error: 'Missing required fields' })
     }
 
-    // Validate date format
     const dobDate = new Date(dob)
     if (isNaN(dobDate.getTime())) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid date format' }),
-        { status: 400 }
-      )
+      return res.status(400).json({ error: 'Invalid date format' })
     }
 
-    const sql = neon(process.env.DATABASE_URL!)
-
-    // Insert the child record
+    // Insert into Neon
     const rows = await sql`
       INSERT INTO children (
         user_id, mother_name, father_name,
@@ -69,28 +47,14 @@ export async function POST(req: Request) {
       RETURNING id
     `
 
-    const created = rows as Array<{ id: string }>
-
-    if (!created || created.length === 0) {
-      throw new Error('Failed to create child record')
-    }
-
-    return Response.json(
-      {
-        id: created[0].id,
-        message: 'Child added successfully',
-      },
-      { status: 201 }
-    )
-  } catch (e: any) {
-    console.error('Database error:', e)
-    return new Response(
-      JSON.stringify({
-        error: 'Internal server error',
-        details:
-          process.env.NODE_ENV === 'development' ? e.message : undefined,
-      }),
-      { status: 500 }
-    )
+    return res.status(201).json({
+      id: rows[0].id,
+      message: 'Child added successfully',
+    })
+  } catch (err) {
+    console.error('Error saving child:', err)
+    return res.status(500).json({ error: 'Internal server error' })
   }
-}
+})
+
+export default router
