@@ -12,6 +12,7 @@ export async function POST(req: Request) {
       )
     }
 
+    // Get the token
     const token = authHeader.split(' ')[1]
 
     // --- 2. Verify the token with Clerk ---
