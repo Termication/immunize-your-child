@@ -94,6 +94,7 @@ export default function SignIn() {
           </View>
         )}
 
+  // Email sign in form
         {!pendingVerification ? (
           <>
             <View className="mt-8">
@@ -146,6 +147,7 @@ export default function SignIn() {
             </View>
           </>
         ) : (
+          // Verify code form
           <>
             <View className="mt-8">
               <Text className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
