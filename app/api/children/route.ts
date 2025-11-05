@@ -80,6 +80,7 @@ export async function POST(req: Request) {
       RETURNING id
     `
 
+    // --- 8. Get the created child record ---
     const created = result[0] as { id: string } | undefined
     if (!created) {
       throw new Error('Failed to insert record')
