@@ -12,6 +12,7 @@ export default function Dashboard() {
 
   const [children] = React.useState<Array<{ id: string; name: string }>>([])
 
+  // Get the children
   return (
     <SafeAreaView className="flex-1 bg-secondary dark:bg-neutral-950">
       <View className="flex-1 px-6 pt-4">
