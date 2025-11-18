@@ -1,34 +1,20 @@
 import { neon } from '@neondatabase/serverless'
-import { verifyToken } from '@clerk/backend'
+import { auth } from '@clerk/nextjs/server' // <--- Updated Import
 
 export async function POST(req: Request) {
   try {
-    // --- 1. Get the token from Authorization header ---
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized: missing token' }),
-        { status: 401 }
-      )
-    }
+    // --- 1. Verify Authentication (The "Next.js way") ---
+    // This automatically checks headers/cookies for the session
+    const { userId } = auth()
 
-    // Get the token
-    const token = authHeader.split(' ')[1]
-
-    // --- 2. Verify the token with Clerk ---
-    const verification = await verifyToken(token, {
-      secretKey: process.env.CLERK_SECRET_KEY!,
-    })
-
-    const userId = verification?.sub // Clerk stores user ID in "sub"
     if (!userId) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized: invalid token' }),
+        JSON.stringify({ error: 'Unauthorized' }),
         { status: 401 }
       )
     }
 
-    // --- 3. Parse the request body ---
+    // --- 2. Parse the request body ---
     const body = await req.json()
     const {
       mother_name,
@@ -43,7 +29,7 @@ export async function POST(req: Request) {
       place_of_birth,
     } = body || {}
 
-    // --- 4. Validate required fields ---
+    // --- 3. Validate required fields ---
     if (!mother_name || !father_name || !child_first_name || !child_surname || !dob) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
@@ -51,7 +37,7 @@ export async function POST(req: Request) {
       )
     }
 
-    // --- 5. Validate date format ---
+    // --- 4. Validate date format ---
     const dobDate = new Date(dob)
     if (isNaN(dobDate.getTime())) {
       return new Response(
@@ -60,10 +46,10 @@ export async function POST(req: Request) {
       )
     }
 
-    // --- 6. Connect to Neon ---
+    // --- 5. Connect to Neon ---
     const sql = neon(process.env.DATABASE_URL!)
 
-    // --- 7. Insert the child record ---
+    // --- 6. Insert the child record ---
     const result = await sql`
       INSERT INTO children (
         user_id, mother_name, father_name,
@@ -80,7 +66,7 @@ export async function POST(req: Request) {
       RETURNING id
     `
 
-    // --- 8. Get the created child record ---
+    // --- 7. Get the created child record ---
     const created = result[0] as { id: string } | undefined
     if (!created) {
       throw new Error('Failed to insert record')
