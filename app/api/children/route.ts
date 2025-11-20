@@ -5,7 +5,10 @@ export async function POST(req: Request) {
   try {
     // --- 1. Verify Authentication (The "Next.js way") ---
     // This automatically checks headers/cookies for the session
-    const { userId } = auth()
+    const { userId } = await auth()
+      if (!userId) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+      }
 
     if (!userId) {
       return new Response(
