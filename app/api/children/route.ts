@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       if (!userId) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
       }
-
+    // -- This is the old way of checking authentication --
     if (!userId) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
