@@ -1,53 +1,69 @@
-# Welcome to your Expo app 👋
+# Immunize Your Child
 
+**Immunize Your Child** is a mobile application built with [Expo](https://expo.dev) designed to help parents manage and track their children's immunization schedules. This project empowers users to stay informed about vaccine timelines and milestones with a simple, intuitive interface.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Features
 
-## Get started
+- View recommended immunization schedules
+- Get notifications for upcoming vaccines
+- Track your child's vaccination history
+- Access official educational resources
 
-1. Install dependencies
+## Getting Started
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) installed
+- [npm](https://www.npmjs.com/) installed
+- [Expo CLI](https://docs.expo.dev/get-started/installation/) (optional for advanced development)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Termication/immunize-your-child.git
+   cd immunize-your-child
+   ```
+
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. Start the app:
    ```bash
    npx expo start
    ```
+   Afterwards, you can open the app in:
+   - [Development Build](https://docs.expo.dev/develop/development-builds/introduction/)
+   - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+   - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+   - [Expo Go](https://expo.dev/go)
 
-In the output, you'll find options to open the app in a
+4. Start building by editing files inside the `app/` directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Resetting the Project
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+To reset the starter code and begin fresh development:
 ```bash
 npm run reset-project
 ```
+This will move the original starter code to an `app-example/` directory and set up a blank `app/` directory for your new work.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Documentation
 
-## Learn more
+For more information about Expo and mobile development, check out:
 
-To learn more about developing your project with Expo, look at the following resources:
+- [Expo documentation](https://docs.expo.dev/) — Fundamentals and advanced guides
+- [Expo tutorial](https://docs.expo.dev/tutorial/introduction/) — Step-by-step app development tutorial
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Community & Contributions
 
-## Join the community
+Join the community to learn, share, and contribute:
 
-Join our community of developers creating universal apps.
+- [Expo on GitHub](https://github.com/expo/expo)
+- [Expo Discord](https://chat.expo.dev)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-!!!
+---
 
+**Official Repository**: [github.com/Termication/immunize-your-child](https://github.com/Termication/immunize-your-child)
