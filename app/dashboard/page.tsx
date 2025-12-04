@@ -48,6 +48,7 @@ export default function Dashboard() {
             </View>
           </View>
         ) : (
+          
           <View className="mt-6">
             <Text className="text-neutral-700 dark:text-neutral-300 mb-3">Your children</Text>
             {children.map((c) => (

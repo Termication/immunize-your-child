@@ -6,6 +6,7 @@ import SplashScreen from "./SplashScreen";
 export default function Index() {
   const [loading, setLoading] = useState(true);
 
+  // Render the landing screen or the splash screen
   return (
     <View style={{ flex: 1 }}>
       {loading ? (
