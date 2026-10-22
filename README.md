@@ -2,6 +2,8 @@
 
 **Immunize Your Child** is a mobile application built with [Expo](https://expo.dev) designed to help parents manage and track their children's immunization schedules. This project empowers users to stay informed about vaccine timelines and milestones with a simple, intuitive interface.
 
+----------------
+
 ## Features
 
 - View recommended immunization schedules
